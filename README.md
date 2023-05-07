@@ -1,6 +1,11 @@
 # Telebot
 
-A simple Telegram bot for sending and receiving messages.
+Regular promotion of products in telegram channels
+A simple Telegram bot for sending and receiving messages between buyers and sellers. Automating all conversation between pairs.
+A Simple UI for seller to track their business processes. 
+Receive telegram messages of buyers via UI.
+Checking Frauds, Detecting scammers and informing sellers about potential risks
+Evaulation of each buyer by performance score
 
 ## Usage
 
