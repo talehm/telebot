@@ -1,7 +1,7 @@
 from telegram.ext import CommandHandler, MessageHandler, Filters,CallbackQueryHandler
 from telebot.webapp import models 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telebot.bot.callbacks import order_product, validate_product_id
+# from telebot.bot.callbacks import order_product, validate_product_id
 from telebot.utils import db_utils 
 from telebot.utils.decorators import save_message
 

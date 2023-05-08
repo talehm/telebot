@@ -14,7 +14,8 @@ class ProductCreateForm(FlaskForm):
     url = StringField('URL', validators=[DataRequired(), URL()])
     image_url = StringField('Image URL', validators=[DataRequired(), URL()])
     status = SelectField('Status', choices=[(s.value, s.name) for s in enums.ProductStatus])
-
+    properties = StringField('Properties', validators=[DataRequired()])
+    
     def __init__(self, *args, **kwargs):
         super(ProductCreateForm, self).__init__(*args, **kwargs)
         self.seller_id.choices = [(seller.id, f'{seller.first_name}  {seller.last_name}') for seller in models.Seller.query.all()]

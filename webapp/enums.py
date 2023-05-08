@@ -8,8 +8,10 @@ class ProductStatus(Enum):
 class Platform(Enum):
     AMAZON = 'AMAZON'
 
-
 class Country(Enum):
     GERMANY = 'GERMANY'
     USA = 'USA'
    
+class ServiceType(Enum):
+    REVIEW = 'REVIEW'
+    FEEDBACK = 'FEEDBACK'

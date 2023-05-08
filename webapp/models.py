@@ -4,15 +4,18 @@ from telebot.webapp import enums
 from sqlalchemy import CheckConstraint, Numeric
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
+from telebot.webapp import types
+import json
 
 class MyBaseModel(db.Model):
     __abstract__ = True
 
-    @classmethod
-    def query(cls, session=None):
-        if session is None:
-            session = db.session
-        return session.query(cls)
+    # @classmethod
+    # def query(cls, session=None):
+    #     print("TEST")
+    #     if session is None:
+    #         session = db.session
+    #     return session.query(cls)
         
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
@@ -56,9 +59,10 @@ class Product(MyBaseModel):
     url = db.Column(db.String, CheckConstraint(text("url ~ '^https?://.*$'")))
     image_url = db.Column(db.String, CheckConstraint(text("image_url ~ '^https?://.*$'")))
     status = db.Column(db.Enum(enums.ProductStatus), default=enums.ProductStatus.AVAILABLE)
+    properties = db.Column(db.JSON)
     seller = db.relationship('Seller', backref='products')
 
-    def __init__(self, description, name, price, seller_id, url, image_url, status, created_at):
+    def __init__(self, description, name, price, seller_id, url, image_url, status, properties):
         self.url = url
         self.description = description
         self.name = name
@@ -66,8 +70,7 @@ class Product(MyBaseModel):
         self.seller_id = seller_id
         self.image_url = image_url
         self.status = status
-        self.created_at = created_at
-
+        self.properties = properties.to_dict()
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
