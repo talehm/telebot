@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin
-from telebot.webapp import models 
-from telebot.admin import views
+from webapp import models 
+from admin import views
 
 def create_admin(app, db):
     admin = Admin(app, name='My App Admin', template_mode='bootstrap3')
@@ -9,4 +9,5 @@ def create_admin(app, db):
     admin.add_view(ModelView(models.Buyer , db.session))
     admin.add_view(ModelView(models.Seller, db.session))
     admin.add_view(ModelView(models.Verification, db.session))
+    admin.add_view(ModelView(models.Order, db.session))
     admin.add_view(ModelView(models.Message, db.session))

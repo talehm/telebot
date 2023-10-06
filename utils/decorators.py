@@ -2,8 +2,8 @@ import json
 from datetime import datetime
 from functools import wraps
 from telegram import Update
-from telebot.webapp import models
-from telebot.webapp.database import DBHelper
+from webapp import models
+from webapp.database import DBHelper
 #  convert to JSON
 def message_to_json(func):
     def wrapper(update: Update, *args, **kwargs):
@@ -15,6 +15,13 @@ def message_to_json(func):
         return func(update, message_json, *args, **kwargs)
     return wrapper
 
+def store_user_data(func):
+    def wrapper(self, update:Update, context, *args, **kwargs):
+        # message = update.message
+        context.user_data["chat_id"] = update.callback_query.message.chat.id
+        return func(self, update, context, *args, **kwargs)
+    return wrapper
+
 
 # save messages of users automatically
 def save_message(func):
@@ -24,7 +31,10 @@ def save_message(func):
         print("message_saved")
         chat_id = message["chat"]["id"]
         message_id = message["message_id"]
-        text = message["text"]
+        if "text" in message:
+            text = message["text"]
+        if len(message["photo"]) > 0:
+            text = f'photo-{message["photo"][0]["file_id"]}'
         created_at = datetime.now()
         dbHelper = DBHelper()
 

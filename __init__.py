@@ -1,1 +1,3 @@
-# from telebot.webapp.models import User, Product
+import os, sys
+project_root = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, project_root)

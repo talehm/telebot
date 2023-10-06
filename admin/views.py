@@ -1,12 +1,12 @@
 from flask_admin.contrib.sqla import ModelView
-from telebot.webapp import models 
+from webapp import models 
 from flask_admin.form import Select2Widget
-from telebot.admin import forms
+from admin import forms
 
 
 class ProductView(ModelView):
     create_form = forms.ProductCreateForm
-    column_list = ['id','seller','name', 'status', 'description',  'price',  'url', ]
+    column_list = ['id','seller','count', 'name', 'status', 'description',  'price',  'url', ]
     column_searchable_list = ('name',)
     form_widget_args = {
         'description': {'rows': 10},
