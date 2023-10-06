@@ -26,9 +26,12 @@ class DBHelper:
             setattr(model_instance, key, value)
         self.session.commit()
         self.session.refresh(model_instance)
+        # self.session.close()
         return model_instance
 
     def delete(self, model_instance):
         """Deletes a record from the database"""
         self.session.delete(model_instance)
         self.session.commit()
+        # self.session.close()
+

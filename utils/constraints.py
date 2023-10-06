@@ -1,0 +1,2 @@
+BUYER_DATA_EXPIRATION = 7
+IMAGE_DIR = "images"

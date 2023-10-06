@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from telebot.webapp.database import db
-from telebot.webapp import enums
+from webapp.database import db
+from webapp import enums
 from sqlalchemy import CheckConstraint, Numeric
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
-from telebot.webapp import types
+from webapp import types
 import json
 
 class MyBaseModel(db.Model):
@@ -29,23 +29,26 @@ class Seller(MyBaseModel):
     last_name = db.Column(db.String)
     email = db.Column(db.String, CheckConstraint("email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'"))
     address = db.Column(db.String)
+    chat_id = db.Column(db.Integer)
     platform = db.Column(db.Enum(enums.Platform), default=enums.Platform.AMAZON)
     country = db.Column(db.Enum(enums.Country), default=enums.Country.GERMANY)
     is_telegram_activated = db.Column(db.Boolean, default=False)
     is_blocked = db.Column(db.Boolean, default=False)
     performance_score = db.Column(DOUBLE_PRECISION, CheckConstraint('performance_score <= 100'))
 
-    def __init__(self, first_name, last_name, email, address, platform, country,created_at, is_telegram_activated, is_blocked, performance_score):
+    def __init__(self, first_name, last_name, email, address, chat_id, platform, country,created_at, is_telegram_activated, is_blocked, performance_score):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.address = address
+        self.chat_id = chat_id
         self.platform = platform
         self.country = country
         self.created_at = created_at
         self.is_telegram_activated = is_telegram_activated
         self.is_blocked = is_blocked
         self.performance_score = performance_score
+        
     def __repr__(self):
         return '<id {}>'.format(self.id)
 
@@ -55,6 +58,7 @@ class Product(MyBaseModel):
     description = db.Column(db.Text)
     name = db.Column(db.String)
     price = db.Column(db.Float)
+    count = db.Column(db.Integer)
     seller_id = db.Column(db.Integer, db.ForeignKey('account_seller.id'))
     url = db.Column(db.String, CheckConstraint(text("url ~ '^https?://.*$'")))
     image_url = db.Column(db.String, CheckConstraint(text("image_url ~ '^https?://.*$'")))
@@ -103,8 +107,11 @@ class Buyer(MyBaseModel):
     chat_id = db.Column(db.Integer, unique=True)
     is_active = db.Column(db.Boolean, default=False)
     is_blocked = db.Column(db.Boolean, default=False)
+    paypal = db.Column(db.String)
+    amazon_url = db.Column(db.Text)
+    amazon_screenshot = db.Column(db.Text)
 
-    def __init__(self, first_name, last_name, username, language_code, chat_id, is_active, is_blocked):
+    def __init__(self, first_name, last_name, username, language_code, chat_id, paypal, amazon_url, amazon_screenshot, is_active, is_blocked):
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
@@ -112,6 +119,9 @@ class Buyer(MyBaseModel):
         self.language_code = language_code
         self.is_active = is_active
         self.is_blocked = is_blocked
+        self.paypal = paypal
+        self.amazon_url = amazon_url
+        self.amazon_screenshot = amazon_screenshot
 
     def __repr__(self):
         return '<username {}>'.format(self.username)
@@ -131,3 +141,25 @@ class Message(MyBaseModel):
 
     def __repr__(self):
         return '<message_id {}>: <text {}>'.format(self.message_id, self.text)
+    
+
+class Order(MyBaseModel):
+    __tablename__ = 'order'
+
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    buyer_id = db.Column(db.Integer, db.ForeignKey('account_buyer.id'))
+    status = db.Column(db.Enum(enums.OrderStatus), default=enums.OrderStatus.WAITING_CONFIRMATION)
+    order_screenshot = db.Column(db.Text, nullable = True)
+    order_id = db.Column(db.Integer, unique = True, nullable = True)
+    buyer = db.relationship('Buyer', backref = 'orders')
+    product = db.relationship('Product', backref = 'orders')
+    
+    def __init__(self, product_id, buyer_id, status, order_id = None, order_screenshot = None):
+        self.product_id = product_id
+        self.buyer_id = buyer_id
+        self.status = status
+        self.order_screenshot = order_screenshot
+        self.order_id = order_id
+
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
