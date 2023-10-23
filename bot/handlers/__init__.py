@@ -1,5 +1,5 @@
-from bot.handlers import  command_handlers, message_handlers, conversation_handlers
-from bot.handlers import callback_queries
+from bot.handlers import callback_query_handlers, command_handlers, message_handlers
+from bot.handlers import commands, callbacks
 from utils.decorators import save_message
 from telegram.ext import  CommandHandler, MessageHandler, CallbackQueryHandler, ConversationHandler
 
@@ -43,7 +43,7 @@ def add_save_message_decorator(dp):
     
 def init(dp):
     # get handlers
-    handler_types = [command_handlers, callback_queries]
+    handler_types = [commands, callbacks]
 
     for handler_type in handler_types:
         for handler in handler_type.get_handlers():

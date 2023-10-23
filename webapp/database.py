@@ -1,5 +1,6 @@
 from sqlalchemy.orm import sessionmaker, Session
 from flask_sqlalchemy import SQLAlchemy
+from datetime import timedelta, datetime
 
 db = SQLAlchemy()
 
@@ -17,8 +18,13 @@ class DBHelper:
     def get_one(self, model, **kwargs):
         return self.session.query(model).filter_by(**kwargs).first()
     
-    def get_many(self, model, **kwargs):
-        return self.session.query(model).filter_by(**kwargs)
+    def get_many(self, model, older_than = None,  **kwargs ):
+        query = self.session.query(model).filter_by(**kwargs)
+
+        if older_than is not None:
+            interval = datetime.utcnow() - older_than
+            query = query.filter(model.created_at <= interval)
+        return query.all()
     
     def update(self, model_instance, **kwargs):
         """Updates an existing record"""
