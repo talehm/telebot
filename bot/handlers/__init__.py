@@ -1,7 +1,11 @@
-from bot.handlers import callback_query_handlers, command_handlers, message_handlers
 from bot.handlers import commands, callbacks
 from utils.decorators import save_message
-from telegram.ext import  CommandHandler, MessageHandler, CallbackQueryHandler, ConversationHandler
+from telegram.ext import (
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ConversationHandler,
+)
 
 ## CUSTOM HANDLERS TO SAVE MESSAGES AUTOMATICALLY
 
@@ -14,33 +18,40 @@ def get_custom_handler(handler):
     elif isinstance(handler, CallbackQueryHandler):
         return CustomCallbackQueryHandler(handler.pattern, handler.callback)
     elif isinstance(handler, ConversationHandler):
-        return CustomConversationHandler(handler.entry_points, handler.states, handler.fallbacks)
+        return CustomConversationHandler(
+            handler.entry_points, handler.states, handler.fallbacks
+        )
     else:
         return handler
+
 
 class CustomCommandHandler(CommandHandler):
     def __init__(self, command, callback):
         super().__init__(command, save_message(callback))
 
+
 class CustomMessageHandler(MessageHandler):
     def __init__(self, filters, callback):
         super().__init__(filters, save_message(callback))
+
 
 class CustomCallbackQueryHandler(CallbackQueryHandler):
     def __init__(self, pattern, callback):
         super().__init__(save_message(callback), pattern)
 
+
 class CustomConversationHandler(ConversationHandler):
     def __init__(self, entry_points, states, fallbacks):
         super().__init__(entry_points, states, fallbacks)
 
+
 def add_save_message_decorator(dp):
     # Add the decorator to all MessageHandlers
     for index, value in enumerate(dp.handlers[0]):
-            decorated_handler = get_custom_handler(value)
-            dp.handlers[0][index]=decorated_handler
-           
-    
+        decorated_handler = get_custom_handler(value)
+        dp.handlers[0][index] = decorated_handler
+
+
 def init(dp):
     # get handlers
     handler_types = [commands, callbacks]
@@ -50,4 +61,3 @@ def init(dp):
             # add handlers
             dp.add_handler(handler)
     add_save_message_decorator(dp)
-    # print(dp.handlers)

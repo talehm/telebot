@@ -4,22 +4,27 @@ from functools import wraps
 from telegram import Update
 from webapp import models
 from webapp.database import DBHelper
+
+
 #  convert to JSON
 def message_to_json(func):
     def wrapper(update: Update, *args, **kwargs):
         message = update.message
         if not message:
-            message=update.callback_query.message
+            message = update.callback_query.message
         message_dict = message.to_dict()
         message_json = json.loads(json.dumps(message_dict))
         return func(update, message_json, *args, **kwargs)
+
     return wrapper
 
+
 def store_user_data(func):
-    def wrapper(self, update:Update, context, *args, **kwargs):
+    def wrapper(self, update: Update, context, *args, **kwargs):
         # message = update.message
         context.user_data["chat_id"] = update.callback_query.message.chat.id
         return func(self, update, context, *args, **kwargs)
+
     return wrapper
 
 
@@ -40,14 +45,11 @@ def save_message(func):
 
         # Save message to database
         message_model = models.Message(
-            message_id=message_id,
-            chat_id=chat_id,
-            text=text,
-            created_at=created_at
+            message_id=message_id, chat_id=chat_id, text=text, created_at=created_at
         )
         dbHelper.add(message_model)
 
         # Call the original function
         return func(update, context)
-    return wrapper
 
+    return wrapper

@@ -9,14 +9,27 @@ from utils.decorators import message_to_json
 
 dbHelper = DBHelper()
 
+
 @message_to_json
 def save_user(update, message):
-    chat_id = message["from"]["id"]
-    first_name = message["from"]["first_name"]
-    last_name = message["from"]["last_name"]
-    username = message["from"]["username"]
-    language_code = message["from"]["language_code"]
+    if "from" in message and message["from"] is not None:
+        from_info = message["from"]
+        chat_id = from_info.get("id")
+        first_name = from_info.get("first_name")
+        last_name = from_info.get("last_name")
+        username = from_info.get("username")
+        language_code = from_info.get("language_code")
+    else:
+        # Handle the case when 'from' key is missing or its value is None
+        # For example, you can set default values or raise an error
+        # Default values example:
+        chat_id = None
+        first_name = None
+        last_name = None
+        username = None
+        language_code = None
 
+    print("MERYEM", last_name)
     user = models.Buyer(
         chat_id=chat_id,
         first_name=first_name,
@@ -25,9 +38,9 @@ def save_user(update, message):
         is_active=True,
         is_blocked=False,
         language_code=language_code,
-        paypal = None,
+        paypal=None,
         amazon_screenshot=None,
-        amazon_url=None
+        amazon_url=None,
     )
     # test_product = models.Product(
     #     name='test',
@@ -42,10 +55,16 @@ def save_user(update, message):
     #         paypal = types.ProductPropertiesPaypal(isPaypalFeeIncluded=True, amount = 5),
     #         service_type = ServiceType.REVIEW.value
     #     )
-    # ) 
+    # )
     # dbHelper.add(test_product)
     user_exists = dbHelper.get_one(models.Buyer, chat_id=chat_id)
     if user_exists:
-        dbHelper.update(user_exists, first_name=first_name, last_name=last_name,username=username, language_code=language_code)
+        dbHelper.update(
+            user_exists,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            language_code=language_code,
+        )
     else:
         dbHelper.add(user)

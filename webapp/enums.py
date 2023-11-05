@@ -1,20 +1,25 @@
 from enum import Enum
 
+
 class ProductStatus(Enum):
-    AVAILABLE = 'AVAILABLE'
-    SOLD_OUT = 'SOLD_OUT'
-    DISCONTINUED = 'DISCONTINUED'
+    AVAILABLE = "AVAILABLE"
+    SOLD_OUT = "SOLD_OUT"
+    DISCONTINUED = "DISCONTINUED"
+
 
 class Platform(Enum):
-    AMAZON = 'AMAZON'
+    AMAZON = "AMAZON"
+
 
 class Country(Enum):
-    GERMANY = 'GERMANY'
-    USA = 'USA'
-   
+    GERMANY = "GERMANY"
+    USA = "USA"
+
+
 class ServiceType(Enum):
-    REVIEW = 'REVIEW'
-    FEEDBACK = 'FEEDBACK'
+    REVIEW = "REVIEW"
+    FEEDBACK = "FEEDBACK"
+
 
 class OrderStatus(Enum):
     WAITING_CONFIRMATION = "WAITING_CONFIRMATION"

@@ -1,12 +1,15 @@
 from sqlalchemy.orm import sessionmaker, Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta, datetime
+from flask import current_app
 
 db = SQLAlchemy()
+
 
 class DBHelper:
     def __init__(self):
         self.session = db.session
+        print("DBHelper")
 
     def add(self, model_instance):
         """Adds a new record to the database"""
@@ -16,16 +19,27 @@ class DBHelper:
         return model_instance
 
     def get_one(self, model, **kwargs):
-        return self.session.query(model).filter_by(**kwargs).first()
-    
-    def get_many(self, model, older_than = None,  **kwargs ):
-        query = self.session.query(model).filter_by(**kwargs)
+        # self.session.rollback()
+        print(model, kwargs)
+        session = db.session
+        try:
+            return session.query(model).filter_by(**kwargs).first()
+        except Exception as e:
+            print(f"Errors: {e}")
+            return None
 
-        if older_than is not None:
-            interval = datetime.utcnow() - older_than
-            query = query.filter(model.created_at <= interval)
-        return query.all()
-    
+    def get_many(self, model, older_than=None, **kwargs):
+        try:
+            query = self.session.query(model).filter_by(**kwargs)
+
+            if older_than is not None:
+                interval = datetime.utcnow() - older_than
+                query = query.filter(model.created_at <= interval)
+            return query.all()
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+
     def update(self, model_instance, **kwargs):
         """Updates an existing record"""
         for key, value in kwargs.items():
@@ -40,4 +54,3 @@ class DBHelper:
         self.session.delete(model_instance)
         self.session.commit()
         # self.session.close()
-
