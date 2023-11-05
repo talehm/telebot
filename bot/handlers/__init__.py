@@ -52,12 +52,15 @@ def add_save_message_decorator(dp):
         dp.handlers[0][index] = decorated_handler
 
 
-def init(dp):
+def init(updater):
     # get handlers
     handler_types = [commands, callbacks]
-
+    dp = updater.dispatcher
+    menu_commands = []
     for handler_type in handler_types:
         for handler in handler_type.get_handlers():
-            # add handlers
             dp.add_handler(handler)
+        menu_commands.extend(handler_type.get_menu())
+    # updater.set)
+    updater.bot.set_my_commands(menu_commands)
     add_save_message_decorator(dp)

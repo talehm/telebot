@@ -9,7 +9,6 @@ db = SQLAlchemy()
 class DBHelper:
     def __init__(self):
         self.session = db.session
-        print("DBHelper")
 
     def add(self, model_instance):
         """Adds a new record to the database"""
@@ -20,7 +19,6 @@ class DBHelper:
 
     def get_one(self, model, **kwargs):
         # self.session.rollback()
-        print(model, kwargs)
         session = db.session
         try:
             return session.query(model).filter_by(**kwargs).first()
@@ -30,7 +28,13 @@ class DBHelper:
 
     def get_many(self, model, older_than=None, **kwargs):
         try:
-            query = self.session.query(model).filter_by(**kwargs)
+            status = kwargs.get("status")  # Extract the statuses from kwargs
+            query = self.session.query(model)
+            if isinstance(status, list):
+                kwargs.pop("status", None)
+                query = query.filter(model.status.in_(status))
+
+            query = query.filter_by(**kwargs)
 
             if older_than is not None:
                 interval = datetime.utcnow() - older_than

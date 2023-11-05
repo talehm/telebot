@@ -28,10 +28,7 @@ from flask import current_app, g
 
 
 def send_notification(chat_id, context):
-    print("Salam")
-    print("AAA")
     try:
-        print("DB Helper instance created")
         dbHelper = DBHelper()
         buyer = dbHelper.get_one(models.Buyer, chat_id=chat_id)
         # if buyer:
@@ -72,6 +69,9 @@ def stop(update, context):
         context.bot.send_message(chat_id, "Notification has been stopped successfully.")
     except JobLookupError:
         context.bot.send_message(chat_id, "No active notification to stop.")
+
+
+menu_commands = []
 
 
 def get_handlers():

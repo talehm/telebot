@@ -29,7 +29,6 @@ def save_user(update, message):
         username = None
         language_code = None
 
-    print("MERYEM", last_name)
     user = models.Buyer(
         chat_id=chat_id,
         first_name=first_name,

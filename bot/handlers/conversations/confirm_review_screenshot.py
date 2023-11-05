@@ -19,7 +19,7 @@ dbHelper = DBHelper()
 def confirm(update, context):
     # text = update.message.text
     # query = update.callback_query
-    update.message.reply_text("Confirmationdbb Sent to Buyer")
+    update.message.reply_text("Confirmation Sent to Buyer")
     return ConversationHandler.END
 
 

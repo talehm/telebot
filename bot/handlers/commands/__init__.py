@@ -2,8 +2,16 @@ from bot.handlers.commands import start, review_reminder
 
 
 def get_handlers():
-    callback_queries = [start, review_reminder]
+    callbacks = [start, review_reminder]
     handlers = []
-    for query in callback_queries:
-        handlers += query.get_handlers()
+    for callback in callbacks:
+        handlers += callback.get_handlers()
     return handlers
+
+
+def get_menu():
+    callbacks = [start, review_reminder]
+    menus = []
+    for callback in callbacks:
+        menus.extend(callback.menu_commands)
+    return menus
