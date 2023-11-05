@@ -1,18 +1,23 @@
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-from webapp import models
+
+# from webapp import models, updater
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 # from bot.callbacks import order_product, validate_product_id
 from utils import db_utils
 from webapp.database import DBHelper
 from utils.decorators import save_message
+from telegram import BotCommand
 
 db_helper = DBHelper()
+
+STATE1, STATE2, STATE3, STATE4, STATE5 = range(5)
 
 
 def start(update, context):
     """Handler function for the /start command"""
     # context.user_data["db_helper"] = db_helper
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -41,11 +46,18 @@ def start(update, context):
             InlineKeyboardButton("\U0001F4E3 Help", callback_data="help"),
         ],
     ]
+    inline_button = InlineKeyboardButton("Inline Button", callback_data="order_product")
 
+    # menu_commands = BotCommand[{"command": "start", "description": "Show Menu"}]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Please choose an option:", reply_markup=reply_markup)
+    update.message.reply_text("Please choose an option from menu")
     db_utils.save_user(update)
 
 
+menu_commands = [BotCommand("start", "Show Menu")]
+
+
 def get_handlers():
-    return [CommandHandler("start", start)]
+    return [
+        CommandHandler("start", start),
+    ]

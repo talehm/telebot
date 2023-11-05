@@ -12,18 +12,18 @@ from utils import helpers
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-STATE5, STATE6 = range(2)
+STATE5 = 0
 dbHelper = DBHelper()
 
 
 def confirm(update, context):
     # text = update.message.text
-    # query = update.callback_query
-    update.message.reply_text("Confirmationdbb Sent to Buyer")
-    return ConversationHandler.END
+    query = update.callback_query
+    update.message.reply_text("Rejection Sent to Buyer")
+    return 6
 
 
 # Define the states and their corresponding handlers
 states = {
-    STATE5: [MessageHandler(Filters.text & ~Filters.command, confirm)],
+    2: [MessageHandler(Filters.text & ~Filters.command, confirm)],
 }

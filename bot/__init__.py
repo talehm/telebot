@@ -7,14 +7,13 @@ def setup_updater():
     updater = Updater(
         "1334466133:AAGpj2HZ7kyxaBRzl4JtnRElVcaedvCdF18", use_context=True
     )
-    WEBHOOK_URL = "https://4fd2-79-211-172-183.ngrok-free.app/webhook"
+    WEBHOOK_URL = "https://a66f-79-211-172-183.ngrok-free.app/webhook"
     updater.bot.setWebhook(url=WEBHOOK_URL)
     # updater.start_polling()
     # job_queue = updater.job_queue
-
     return updater
 
 
 def init(dp):
     handlers.init(dp)
-    reminders.init(dp)
+    # reminders.init(dp)

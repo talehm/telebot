@@ -4,6 +4,11 @@ import validators
 import os
 import uuid
 from datetime import datetime, timedelta
+from webapp import models, enums
+from webapp.database import DBHelper
+from utils import helpers, constraints, constants
+
+dbHelper = DBHelper()
 
 
 def is_valid_email(email):
@@ -58,3 +63,37 @@ def is_older_than(date, weeks=0, days=0, hours=0):
         return True
     else:
         return False
+
+
+def save_photo(update, context, source):
+    try:
+        #
+        if source is constants.ORDER_SCREENSHOT:
+            source = "orders"
+        elif source is constants.ACCOUNT_SCREENSHOT:
+            source = "accounts"
+        #
+        SAVE_DIR = f"{constraints.IMAGE_DIR}\{source}"
+
+        photo = update.message.photo[-1]
+        # Get the file ID and file path
+        file_id = photo.file_id
+        file = context.bot.get_file(file_id)
+
+        # Create the save directory if it doesn't exist
+        os.makedirs(SAVE_DIR, exist_ok=True)
+        # Save the photo with a unique name
+        save_path = os.path.join(SAVE_DIR, f"{file_id}.jpg")
+        file.download(save_path)
+        return save_path
+    except Exception as e:
+        print(f"Error saving photo: {e}")
+        return False
+
+
+# def get_ative_orders(buyer):
+#     orders = DBHelper().get_many(
+#         model=models.Order,
+#         buyer=buyer,
+#         status =
+#     )

@@ -22,7 +22,10 @@ def message_to_json(func):
 def store_user_data(func):
     def wrapper(self, update: Update, context, *args, **kwargs):
         # message = update.message
-        context.user_data["chat_id"] = update.callback_query.message.chat.id
+        chat_id = update.message.chat.id
+        if not chat_id:
+            chat_id = update.callback_query.message.chat.id
+        context.user_data["chat_id"] = chat_id
         return func(self, update, context, *args, **kwargs)
 
     return wrapper
@@ -33,7 +36,6 @@ def save_message(func):
     @wraps(func)
     @message_to_json
     def wrapper(update, message, context):
-        print("message_saved")
         chat_id = message["chat"]["id"]
         message_id = message["message_id"]
         if "text" in message:

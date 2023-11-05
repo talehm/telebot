@@ -11,13 +11,6 @@ import json
 class MyBaseModel(db.Model):
     __abstract__ = True
 
-    # @classmethod
-    # def query(cls, session=None):
-    #     print("TEST")
-    #     if session is None:
-    #         session = db.session
-    #     return session.query(cls)
-
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
     id = db.Column(db.Integer, primary_key=True)
@@ -102,6 +95,12 @@ class Product(MyBaseModel):
 
     def __repr__(self):
         return "<id {}>".format(self.id)
+
+    def order(self):
+        self.count -= 1
+        if self.count == 0:
+            self.status = enums.ProductStatus.SOLD_OUT
+        return self
 
 
 class Verification(MyBaseModel):
@@ -192,17 +191,25 @@ class Order(MyBaseModel):
     status = db.Column(
         db.Enum(enums.OrderStatus), default=enums.OrderStatus.WAITING_CONFIRMATION
     )
+    review_screenshot = db.Column(db.Text, nullable=True)
     order_screenshot = db.Column(db.Text, nullable=True)
     order_id = db.Column(db.Integer, unique=True, nullable=True)
     buyer = db.relationship("Buyer", backref="orders")
     product = db.relationship("Product", backref="orders")
 
     def __init__(
-        self, product_id, buyer_id, status, order_id=None, order_screenshot=None
+        self,
+        product_id,
+        buyer_id,
+        status,
+        order_id=None,
+        order_screenshot=None,
+        review_screenshot=None,
     ):
         self.product_id = product_id
         self.buyer_id = buyer_id
         self.status = status
+        self.review_screenshot = review_screenshot
         self.order_screenshot = order_screenshot
         self.order_id = order_id
 
