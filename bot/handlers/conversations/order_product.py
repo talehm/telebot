@@ -1,22 +1,18 @@
 from telegram.ext import (
-    CallbackQueryHandler,
     ConversationHandler,
     MessageHandler,
     Filters,
-    CommandHandler,
 )
 from webapp import models
 from webapp.database import DBHelper
 from telegram import ParseMode
 from utils import helpers, constraints, constants
-import os
 from utils.decorators import save_message
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import json
+import json, re
 from webapp import enums
-import re
 
-STATE1, STATE2, STATE3, STATE4, STATE5, STATE6, STATE7 = range(7)
+STATE1, STATE2, STATE3, STATE4, STATE5, STATE6, STATE7, STATE8 = range(8)
 dbHelper = DBHelper()
 
 
@@ -62,104 +58,6 @@ def save_buyer_info(update, context, column, text=None):
     except Exception as e:
         print(f"Error updating buyer information: {e}")
         return False
-
-
-def send_to_seller(update, context, action=None):
-    try:
-        #
-        product = context.user_data["chosen_product"]
-        seller = dbHelper.get_one(models.Seller, id=product.seller_id)
-        buyer = dbHelper.get_one(models.Buyer, chat_id=context.user_data.get("chat_id"))
-        keyboard = []
-        if action is constants.NEW_ORDER_REQUEST:
-            order_model = models.Order(
-                product_id=product.id,
-                buyer_id=buyer.id,
-                status=enums.OrderStatus.WAITING_CONFIRMATION,
-            )
-            order = dbHelper.add(order_model)
-            context.user_data["order_id"] = order.id
-            #
-            message = (
-                f"🔔 <b>New Order Request Received.</b> 🔔\n\n"
-                f"🆔 {product.id}\n"
-                f"📦 Product: {product.description}\n\n"
-                f"👤 <b>CUSTOMER DETAILS</b>\n\n"
-                f"📨 Paypal: {buyer.paypal}\n"
-                f"🔗 Amazon Account : {buyer.amazon_url}\n"
-            )
-
-            context.bot.sendMessage(
-                chat_id=seller.chat_id, text=message, parse_mode=ParseMode.HTML
-            )
-            context.bot.send_photo(
-                chat_id=seller.chat_id,
-                photo=open(buyer.amazon_screenshot, "rb"),
-                caption="Amazon Account Screenshot",
-            )
-            keyboard = [
-                [
-                    InlineKeyboardButton(
-                        "✅ Confirm",
-                        callback_data=json.dumps(
-                            {
-                                "action": "confirm_new_order_request",
-                                "order_id": order.id,
-                            }
-                        ),
-                    ),
-                    InlineKeyboardButton(
-                        "❌ Reject",
-                        callback_data=json.dumps(
-                            {"action": "reject_new_order_request", "order_id": order.id}
-                        ),
-                    ),
-                ]
-            ]
-
-        elif action is constants.ORDER_SCREENSHOT:
-            order = dbHelper.get_one(models.Order, id=context.user_data["order_id"])
-            message = f"🔔 *Screenshot for Order id {order.id}* 🔔"
-
-            context.bot.send_photo(
-                chat_id=seller.chat_id,
-                photo=open(context.user_data["amazon_order_screenshot"], "rb"),
-                caption=message,
-                parse_mode=ParseMode.MARKDOWN_V2,
-            )
-            #
-            order.status = enums.OrderStatus.SS_SENT
-            dbHelper.update(order)
-
-            #
-            keyboard = [
-                [
-                    InlineKeyboardButton(
-                        "✅ Confirm",
-                        callback_data=json.dumps(
-                            {"action": "accept_order_screenshot", "order_id": order.id}
-                        ),
-                    ),
-                    InlineKeyboardButton(
-                        "❌ Reject",
-                        callback_data=json.dumps(
-                            {"action": "decline_order_screenshot", "order_id": order.id}
-                        ),
-                    ),
-                ]
-            ]
-
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.sendMessage(
-            chat_id=seller.chat_id,
-            text="Please choose an option:",
-            reply_markup=reply_markup,
-        )
-
-    except Exception as e:
-        update.message.reply_text(
-            f"Error occured. Message is not delivered to seller:{e}"
-        )
 
 
 def validate_product_id(update, context):
@@ -222,7 +120,7 @@ def validate_product_id(update, context):
             else:
                 update.message.reply_photo(photo=photo_url, caption=product_info)
                 update.message.reply_text("*Your order request is sent to the agent*")
-                send_to_seller(update, context, constants.NEW_ORDER_REQUEST)
+                helpers.send_to_seller(update, context, constants.NEW_ORDER_REQUEST)
                 return STATE6
 
 
@@ -261,13 +159,30 @@ def get_amazon_account_screenshot(update, context):
         isSaved = save_buyer_info(update, context, "amazon_screenshot", path)
         if isSaved:
             context.user_data["amazon_screenshot"] = path
-            send_to_seller(update, context, constants.NEW_ORDER_REQUEST)
+            helpers.send_to_seller(update, context, constants.NEW_ORDER_REQUEST)
             update.message.reply_text(
                 "Data is sent to seller. Please stay tuned until confirmation"
             )
             return ConversationHandler.END
     update.message.reply_text("Photo is not saved. Please try again")
     return
+
+
+def send_order_number_to_seller(update, context):
+    print(context.user_data)
+    order_number = update.message.text
+    print(order_number)
+    if order_number is not None and helpers.validate_order_number(order_number):
+        order = dbHelper.get_one(models.Order, id=context.user_data["order_id"])
+        order.order_number = order_number
+        dbHelper.update(order)
+        update.message.reply_text("Please Send order screenshot")
+        return STATE7
+    else:
+        update.message.reply_text(
+            "Validation error. Please try again. Ex: 123-1234567-1234567"
+        )
+        return STATE6
 
 
 def send_order_screenshot_to_seller(update, context):
@@ -283,22 +198,15 @@ def send_order_screenshot_to_seller(update, context):
             dbHelper.update(order)
             #
             context.user_data["amazon_order_screenshot"] = path
-            send_to_seller(update, context, constants.ORDER_SCREENSHOT)
+            helpers.send_to_seller(update, context, constants.ORDER_SCREENSHOT)
             update.message.reply_text(
                 "Screenshot is sent to seller. Please stay tuned until confirmation"
             )
-            return STATE6
+            return STATE7
     else:
-        return STATE7
+        return STATE8
     update.message.reply_text("Photo is not saved. Please try again")
     return False
-
-
-# def test(update, context):
-#     update.message.reply_text("worked")
-#     # test = send_order_screenshot_to_seller(update, context)
-#     return ConversationHandler.END
-
 
 # Define the states and their corresponding handlers
 states = {
@@ -320,11 +228,12 @@ states = {
     STATE4: [
         MessageHandler(Filters.photo, save_message(get_amazon_account_screenshot))
     ],
-    STATE5: [
-        MessageHandler(Filters.text & ~Filters.command, save_message(send_to_seller))
-    ],
     STATE6: [
+        MessageHandler(
+            Filters.text & ~Filters.command, save_message(send_order_number_to_seller)
+        )
+    ],
+    STATE7: [
         MessageHandler(Filters.photo, save_message(send_order_screenshot_to_seller))
     ],
-    # STATE7: [MessageHandler(Filters.photo, test)],
 }
