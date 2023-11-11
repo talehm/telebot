@@ -193,7 +193,7 @@ class Order(MyBaseModel):
     )
     review_screenshot = db.Column(db.Text, nullable=True)
     order_screenshot = db.Column(db.Text, nullable=True)
-    order_id = db.Column(db.Integer, unique=True, nullable=True)
+    order_number = db.Column(db.String, unique=True, nullable=True)
     buyer = db.relationship("Buyer", backref="orders")
     product = db.relationship("Product", backref="orders")
 

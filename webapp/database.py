@@ -48,6 +48,8 @@ class DBHelper:
         """Updates an existing record"""
         for key, value in kwargs.items():
             setattr(model_instance, key, value)
+        # if kwargs.items() == 0:
+        #     self.session.add(model_instance)
         self.session.commit()
         self.session.refresh(model_instance)
         # self.session.close()

@@ -16,7 +16,6 @@ class HandleQuery:
     @store_user_data
     def order_product(self, update, context):
         query = update.callback_query
-        print("SDfdsfdsf")
         update.message.reply_text(text="Please enter the product id:")
         # user_exists = DBHelper().get_one(buyer, chat_id=chat_id)
         return STATE1
@@ -32,17 +31,18 @@ class HandleQuery:
             buyer_id=user.id,
             status=[enums.OrderStatus.SS_ACCEPTED, enums.OrderStatus.REVIEW_REJECTED],
         )
-        if orders is None:
-            update.message.reply_text(text="You have no active orders.")
+        if orders is None or len(orders) == 0:
+            update.message.reply_text(text="You have no active orders without review.")
             return ConversationHandler.END
 
         options = []  # Your list of options
         context.user_data["orders"] = orders
+        print(orders, "AAA")
         for order in orders:
             product = dbHelper.get_one(model=models.Product, id=order.product_id)
             options.append(
-                regexp.review_order_list(order.order_id, product.name, regexp=False)
-            )  # f"Order id: {order.order_id} \n Product: {product.name}")
+                regexp.review_order_list(order.order_number, product.name, regexp=False)
+            )
         reply_markup = ReplyKeyboardMarkup(
             [[option] for option in options], one_time_keyboard=True
         )

@@ -45,7 +45,7 @@ class HandleQuery:
                 f"🆔 {product.id}\n"
                 f"📦 Product: {product.description}\n\n"
                 f"{product.url}\n\n\n"
-                f"*Please purchase the product and send the order screenshot*"
+                f"*Please purchase the product and send the order number*"
             )
 
             context.user_data["buyer_chat_id"] = buyer.chat_id
@@ -133,7 +133,7 @@ class HandleQuery:
             buyer = dbHelper.get_one(models.Buyer, id=order.buyer_id)
             product = dbHelper.get_one(models.Product, id=order.product_id)
             text = (
-                f"*Your Review is CONFIRMED for the order number {order.order_id}*\n\n"
+                f"*Your Review is CONFIRMED for the order number {order.order_number}*\n\n"
                 f"*Please wait for paypal refund in next 5 days*"
             )
 
